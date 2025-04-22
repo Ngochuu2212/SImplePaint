@@ -51,7 +51,6 @@
             this.btnEllipse = new System.Windows.Forms.Button();
             this.btnDuongThang = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.hungToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -66,8 +65,7 @@
             this.selectToolStripMenuItem,
             this.groupToolStripMenuItem,
             this.ungroupToolStripMenuItem,
-            this.zoomToolStripMenuItem,
-            this.hungToolStripMenuItem});
+            this.zoomToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(800, 28);
@@ -266,12 +264,6 @@
             this.panel2.Size = new System.Drawing.Size(652, 419);
             this.panel2.TabIndex = 2;
             // 
-            // hungToolStripMenuItem
-            // 
-            this.hungToolStripMenuItem.Name = "hungToolStripMenuItem";
-            this.hungToolStripMenuItem.Size = new System.Drawing.Size(59, 24);
-            this.hungToolStripMenuItem.Text = "Hung";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -317,7 +309,6 @@
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.ToolStripMenuItem hungToolStripMenuItem;
     }
 }
 
