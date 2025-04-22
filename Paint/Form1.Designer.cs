@@ -29,20 +29,20 @@
         private void InitializeComponent()
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuFile = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.groupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ungroupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuSelect = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuUngroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuZoom = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.cmbKieuVe = new System.Windows.Forms.ComboBox();
+            this.btnMauNen = new System.Windows.Forms.Button();
+            this.numDoDay = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
-            this.btnMau = new System.Windows.Forms.Button();
+            this.btnMauDuong = new System.Windows.Forms.Button();
             this.btnDaGiac = new System.Windows.Forms.Button();
             this.btnDuongCong = new System.Windows.Forms.Button();
             this.btnHinhTron = new System.Windows.Forms.Button();
@@ -53,7 +53,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDoDay)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -61,70 +61,70 @@
             this.menuStrip1.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.selectToolStripMenuItem,
-            this.groupToolStripMenuItem,
-            this.ungroupToolStripMenuItem,
-            this.zoomToolStripMenuItem});
+            this.MenuFile,
+            this.MenuSelect,
+            this.MenuGroup,
+            this.MenuUngroup,
+            this.MenuZoom});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(800, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
-            // fileToolStripMenuItem
+            // MenuFile
             // 
-            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripMenuItem,
             this.saveToolStripMenuItem});
-            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
-            this.fileToolStripMenuItem.Text = "File";
+            this.MenuFile.Name = "MenuFile";
+            this.MenuFile.Size = new System.Drawing.Size(46, 24);
+            this.MenuFile.Text = "File";
             // 
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(123, 26);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.newToolStripMenuItem.Text = "New";
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(123, 26);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.saveToolStripMenuItem.Text = "Save";
             // 
-            // selectToolStripMenuItem
+            // MenuSelect
             // 
-            this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-            this.selectToolStripMenuItem.Size = new System.Drawing.Size(63, 24);
-            this.selectToolStripMenuItem.Text = "Select";
+            this.MenuSelect.Name = "MenuSelect";
+            this.MenuSelect.Size = new System.Drawing.Size(63, 24);
+            this.MenuSelect.Text = "Select";
             // 
-            // groupToolStripMenuItem
+            // MenuGroup
             // 
-            this.groupToolStripMenuItem.Name = "groupToolStripMenuItem";
-            this.groupToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
-            this.groupToolStripMenuItem.Text = "Group";
+            this.MenuGroup.Name = "MenuGroup";
+            this.MenuGroup.Size = new System.Drawing.Size(64, 24);
+            this.MenuGroup.Text = "Group";
             // 
-            // ungroupToolStripMenuItem
+            // MenuUngroup
             // 
-            this.ungroupToolStripMenuItem.Name = "ungroupToolStripMenuItem";
-            this.ungroupToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
-            this.ungroupToolStripMenuItem.Text = "Ungroup";
+            this.MenuUngroup.Name = "MenuUngroup";
+            this.MenuUngroup.Size = new System.Drawing.Size(81, 24);
+            this.MenuUngroup.Text = "Ungroup";
             // 
-            // zoomToolStripMenuItem
+            // MenuZoom
             // 
-            this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(63, 24);
-            this.zoomToolStripMenuItem.Text = "Zoom";
+            this.MenuZoom.Name = "MenuZoom";
+            this.MenuZoom.Size = new System.Drawing.Size(63, 24);
+            this.MenuZoom.Text = "Zoom";
             // 
             // panel1
             // 
             this.panel1.Controls.Add(this.label2);
-            this.panel1.Controls.Add(this.comboBox1);
-            this.panel1.Controls.Add(this.button1);
-            this.panel1.Controls.Add(this.numericUpDown1);
+            this.panel1.Controls.Add(this.cmbKieuVe);
+            this.panel1.Controls.Add(this.btnMauNen);
+            this.panel1.Controls.Add(this.numDoDay);
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.btnMau);
+            this.panel1.Controls.Add(this.btnMauDuong);
             this.panel1.Controls.Add(this.btnDaGiac);
             this.panel1.Controls.Add(this.btnDuongCong);
             this.panel1.Controls.Add(this.btnHinhTron);
@@ -147,32 +147,32 @@
             this.label2.TabIndex = 12;
             this.label2.Text = "Kiểu đường vẽ";
             // 
-            // comboBox1
+            // cmbKieuVe
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
+            this.cmbKieuVe.FormattingEnabled = true;
+            this.cmbKieuVe.Items.AddRange(new object[] {
             "Nét liền",
             "Nét đứt"});
-            this.comboBox1.Location = new System.Drawing.Point(12, 390);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 24);
-            this.comboBox1.TabIndex = 11;
+            this.cmbKieuVe.Location = new System.Drawing.Point(12, 390);
+            this.cmbKieuVe.Name = "cmbKieuVe";
+            this.cmbKieuVe.Size = new System.Drawing.Size(121, 24);
+            this.cmbKieuVe.TabIndex = 11;
             // 
-            // button1
+            // btnMauNen
             // 
-            this.button1.Location = new System.Drawing.Point(12, 336);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(116, 29);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "Màu nền tô";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnMauNen.Location = new System.Drawing.Point(12, 336);
+            this.btnMauNen.Name = "btnMauNen";
+            this.btnMauNen.Size = new System.Drawing.Size(116, 29);
+            this.btnMauNen.TabIndex = 10;
+            this.btnMauNen.Text = "Màu nền tô";
+            this.btnMauNen.UseVisualStyleBackColor = true;
             // 
-            // numericUpDown1
+            // numDoDay
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(16, 309);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(120, 22);
-            this.numericUpDown1.TabIndex = 9;
+            this.numDoDay.Location = new System.Drawing.Point(16, 309);
+            this.numDoDay.Name = "numDoDay";
+            this.numDoDay.Size = new System.Drawing.Size(120, 22);
+            this.numDoDay.TabIndex = 9;
             // 
             // label1
             // 
@@ -184,14 +184,14 @@
             this.label1.TabIndex = 8;
             this.label1.Text = "Độ dày";
             // 
-            // btnMau
+            // btnMauDuong
             // 
-            this.btnMau.Location = new System.Drawing.Point(12, 252);
-            this.btnMau.Name = "btnMau";
-            this.btnMau.Size = new System.Drawing.Size(116, 29);
-            this.btnMau.TabIndex = 7;
-            this.btnMau.Text = "Màu đường tô";
-            this.btnMau.UseVisualStyleBackColor = true;
+            this.btnMauDuong.Location = new System.Drawing.Point(12, 252);
+            this.btnMauDuong.Name = "btnMauDuong";
+            this.btnMauDuong.Size = new System.Drawing.Size(116, 29);
+            this.btnMauDuong.TabIndex = 7;
+            this.btnMauDuong.Text = "Màu đường tô";
+            this.btnMauDuong.UseVisualStyleBackColor = true;
             // 
             // btnDaGiac
             // 
@@ -278,7 +278,7 @@
             this.menuStrip1.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDoDay)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -287,7 +287,7 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem MenuFile;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.Panel panel1;
@@ -299,16 +299,16 @@
         private System.Windows.Forms.Button btnEllipse;
         private System.Windows.Forms.Button btnDuongThang;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.ToolStripMenuItem selectToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem groupToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ungroupToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem MenuSelect;
+        private System.Windows.Forms.ToolStripMenuItem MenuGroup;
+        private System.Windows.Forms.ToolStripMenuItem MenuUngroup;
+        private System.Windows.Forms.ToolStripMenuItem MenuZoom;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button btnMau;
+        private System.Windows.Forms.Button btnMauDuong;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.ComboBox cmbKieuVe;
+        private System.Windows.Forms.Button btnMauNen;
+        private System.Windows.Forms.NumericUpDown numDoDay;
     }
 }
 
