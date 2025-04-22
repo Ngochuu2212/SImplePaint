@@ -37,6 +37,12 @@
             this.ungroupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
+            this.btnMau = new System.Windows.Forms.Button();
             this.btnDaGiac = new System.Windows.Forms.Button();
             this.btnDuongCong = new System.Windows.Forms.Button();
             this.btnHinhTron = new System.Windows.Forms.Button();
@@ -45,12 +51,7 @@
             this.btnEllipse = new System.Windows.Forms.Button();
             this.btnDuongThang = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.btnMau = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.button1 = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.hungToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -65,7 +66,8 @@
             this.selectToolStripMenuItem,
             this.groupToolStripMenuItem,
             this.ungroupToolStripMenuItem,
-            this.zoomToolStripMenuItem});
+            this.zoomToolStripMenuItem,
+            this.hungToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(800, 28);
@@ -136,6 +138,62 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(142, 419);
             this.panel1.TabIndex = 1;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(12, 368);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(114, 20);
+            this.label2.TabIndex = 12;
+            this.label2.Text = "Kiểu đường vẽ";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "Nét liền",
+            "Nét đứt"});
+            this.comboBox1.Location = new System.Drawing.Point(12, 390);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 24);
+            this.comboBox1.TabIndex = 11;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(12, 336);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(116, 29);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Màu nền tô";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Location = new System.Drawing.Point(16, 309);
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(120, 22);
+            this.numericUpDown1.TabIndex = 9;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(12, 285);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(61, 20);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Độ dày";
+            // 
+            // btnMau
+            // 
+            this.btnMau.Location = new System.Drawing.Point(12, 252);
+            this.btnMau.Name = "btnMau";
+            this.btnMau.Size = new System.Drawing.Size(116, 29);
+            this.btnMau.TabIndex = 7;
+            this.btnMau.Text = "Màu đường tô";
+            this.btnMau.UseVisualStyleBackColor = true;
             // 
             // btnDaGiac
             // 
@@ -208,61 +266,11 @@
             this.panel2.Size = new System.Drawing.Size(652, 419);
             this.panel2.TabIndex = 2;
             // 
-            // btnMau
+            // hungToolStripMenuItem
             // 
-            this.btnMau.Location = new System.Drawing.Point(12, 252);
-            this.btnMau.Name = "btnMau";
-            this.btnMau.Size = new System.Drawing.Size(116, 29);
-            this.btnMau.TabIndex = 7;
-            this.btnMau.Text = "Màu đường tô";
-            this.btnMau.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(12, 285);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(61, 20);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Độ dày";
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(16, 309);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(120, 22);
-            this.numericUpDown1.TabIndex = 9;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(12, 336);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(116, 29);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "Màu nền tô";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Nét liền",
-            "Nét đứt"});
-            this.comboBox1.Location = new System.Drawing.Point(12, 390);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 24);
-            this.comboBox1.TabIndex = 11;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(12, 368);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(114, 20);
-            this.label2.TabIndex = 12;
-            this.label2.Text = "Kiểu đường vẽ";
+            this.hungToolStripMenuItem.Name = "hungToolStripMenuItem";
+            this.hungToolStripMenuItem.Size = new System.Drawing.Size(59, 24);
+            this.hungToolStripMenuItem.Text = "Hung";
             // 
             // Form1
             // 
@@ -309,6 +317,7 @@
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.ToolStripMenuItem hungToolStripMenuItem;
     }
 }
 
