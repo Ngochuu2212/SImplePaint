@@ -51,6 +51,7 @@
             this.btnEllipse = new System.Windows.Forms.Button();
             this.btnDuongThang = new System.Windows.Forms.Button();
             this.panel_khungve = new System.Windows.Forms.Panel();
+            this.XoaMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel_chucnang.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numDoDay)).BeginInit();
@@ -65,11 +66,12 @@
             this.Chonvungdave,
             this.NhomCacHinh,
             this.GoCacHinh,
-            this.PhongToHinh});
+            this.PhongToHinh,
+            this.XoaMenu});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1388, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1390, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -85,14 +87,14 @@
             // MofileMoi
             // 
             this.MofileMoi.Name = "MofileMoi";
-            this.MofileMoi.Size = new System.Drawing.Size(180, 22);
+            this.MofileMoi.Size = new System.Drawing.Size(139, 22);
             this.MofileMoi.Text = "Mở bản mới";
             this.MofileMoi.Click += new System.EventHandler(this.MofileMoi_Click);
             // 
             // Luufiledave
             // 
             this.Luufiledave.Name = "Luufiledave";
-            this.Luufiledave.Size = new System.Drawing.Size(180, 22);
+            this.Luufiledave.Size = new System.Drawing.Size(139, 22);
             this.Luufiledave.Text = "Lưu";
             this.Luufiledave.Click += new System.EventHandler(this.Luufiledave_Click);
             // 
@@ -115,12 +117,14 @@
             this.GoCacHinh.Name = "GoCacHinh";
             this.GoCacHinh.Size = new System.Drawing.Size(69, 20);
             this.GoCacHinh.Text = "Gỡ nhóm";
+            this.GoCacHinh.Click += new System.EventHandler(this.GoCacHinh_Click);
             // 
             // PhongToHinh
             // 
             this.PhongToHinh.Name = "PhongToHinh";
             this.PhongToHinh.Size = new System.Drawing.Size(121, 20);
             this.PhongToHinh.Text = "Phóng to / thu nhỏ";
+            this.PhongToHinh.Click += new System.EventHandler(this.PhongToHinh_Click);
             // 
             // panel_chucnang
             // 
@@ -296,11 +300,18 @@
             this.panel_khungve.Size = new System.Drawing.Size(1182, 624);
             this.panel_khungve.TabIndex = 2;
             // 
+            // XoaMenu
+            // 
+            this.XoaMenu.Name = "XoaMenu";
+            this.XoaMenu.Size = new System.Drawing.Size(66, 20);
+            this.XoaMenu.Text = "Xóa hình";
+            this.XoaMenu.Click += new System.EventHandler(this.XoaMenu_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1388, 649);
+            this.ClientSize = new System.Drawing.Size(1390, 649);
             this.Controls.Add(this.panel_khungve);
             this.Controls.Add(this.panel_chucnang);
             this.Controls.Add(this.menuStrip1);
@@ -325,7 +336,17 @@
         private System.Windows.Forms.ToolStripMenuItem MenuFile;
         private System.Windows.Forms.ToolStripMenuItem MofileMoi;
         private System.Windows.Forms.ToolStripMenuItem Luufiledave;
+        private System.Windows.Forms.ToolStripMenuItem Chonvungdave;
+        private System.Windows.Forms.ToolStripMenuItem NhomCacHinh;
+        private System.Windows.Forms.ToolStripMenuItem GoCacHinh;
+        private System.Windows.Forms.ToolStripMenuItem PhongToHinh;
         private System.Windows.Forms.Panel panel_chucnang;
+        private System.Windows.Forms.ComboBox cmbKieuVe;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btnMauNen;
+        private System.Windows.Forms.NumericUpDown numDoDay;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnMauDuong;
         private System.Windows.Forms.Button btnDaGiac;
         private System.Windows.Forms.Button btnDuongCong;
         private System.Windows.Forms.Button btnHinhTron;
@@ -334,16 +355,7 @@
         private System.Windows.Forms.Button btnEllipse;
         private System.Windows.Forms.Button btnDuongThang;
         private System.Windows.Forms.Panel panel_khungve;
-        private System.Windows.Forms.ToolStripMenuItem Chonvungdave;
-        private System.Windows.Forms.ToolStripMenuItem NhomCacHinh;
-        private System.Windows.Forms.ToolStripMenuItem GoCacHinh;
-        private System.Windows.Forms.ToolStripMenuItem PhongToHinh;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button btnMauDuong;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox cmbKieuVe;
-        private System.Windows.Forms.Button btnMauNen;
-        private System.Windows.Forms.NumericUpDown numDoDay;
+        private System.Windows.Forms.ToolStripMenuItem XoaMenu;
     }
 }
 
