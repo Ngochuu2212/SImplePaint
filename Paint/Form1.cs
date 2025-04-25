@@ -26,6 +26,10 @@ namespace Paint
         private bool isMoving = false;
         private Shape selectedShape = null;
         private Point lastPoint;
+        private List<Shape> selectedShapes = new List<Shape>();
+        private bool isSelecting = false;
+        private Rectangle selectionRect;
+        private Point selectionStart;
 
         private enum ShapeType
         {
@@ -66,7 +70,7 @@ namespace Paint
             public override bool Contains(Point point)
             {
                 float distance = DistanceToLine(point, StartPoint, EndPoint);
-                return distance <= 5;
+                return distance <= 8;
             }
 
             private float DistanceToLine(Point point, Point lineStart, Point lineEnd)
@@ -100,6 +104,8 @@ namespace Paint
             public override bool Contains(Point point)
             {
                 Rectangle rect = GetRectangle();
+                // Mở rộng vùng chọn thêm 5 pixel cho mỗi cạnh
+                rect.Inflate(5, 5);
                 return rect.Contains(point);
             }
 
@@ -107,8 +113,8 @@ namespace Paint
             {
                 int x = Math.Min(StartPoint.X, EndPoint.X);
                 int y = Math.Min(StartPoint.Y, EndPoint.Y);
-                int width = Math.Abs(EndPoint.X - StartPoint.X);
-                int height = Math.Abs(EndPoint.Y - StartPoint.Y);
+                int width = Math.Abs(EndPoint.X - StartPoint.X) + 1;
+                int height = Math.Abs(EndPoint.Y - StartPoint.Y) + 1;
                 return new Rectangle(x, y, width, height);
             }
         }
@@ -131,12 +137,16 @@ namespace Paint
                 Rectangle rect = GetRectangle();
                 float a = rect.Width / 2f;
                 float b = rect.Height / 2f;
-                float x = point.X - (rect.X + a);
-                float y = point.Y - (rect.Y + b);
-                return (x * x) / (a * a) + (y * y) / (b * b) <= 1;
+                float centerX = rect.X + a;
+                float centerY = rect.Y + b;
+                float x = point.X - centerX;
+                float y = point.Y - centerY;
+
+                float ratio = (x * x) / (a * a) + (y * y) / (b * b);
+                return ratio <= 1.1;
             }
 
-            private Rectangle GetRectangle()
+            public Rectangle GetRectangle()
             {
                 int x = Math.Min(StartPoint.X, EndPoint.X);
                 int y = Math.Min(StartPoint.Y, EndPoint.Y);
@@ -213,7 +223,12 @@ namespace Paint
 
         private class BezierCurveShape : Shape
         {
-            private float curvature = 0.5f; // Độ cong mặc định
+            private float curvature = 0.5f;
+
+            public float GetCurvature()
+            {
+                return curvature;
+            }
 
             public override void Draw(Graphics g)
             {
@@ -254,7 +269,7 @@ namespace Paint
                     float t = i / (float)(steps - 1);
                     Point bezierPoint = GetBezierPoint(t);
                     float distance = (float)Math.Sqrt(
-                        Math.Pow(point.X - bezierPoint.X, 2) + 
+                        Math.Pow(point.X - bezierPoint.X, 2) +
                         Math.Pow(point.Y - bezierPoint.Y, 2)
                     );
                     minDistance = Math.Min(minDistance, distance);
@@ -316,17 +331,19 @@ namespace Paint
             public override bool Contains(Point point)
             {
                 Rectangle rect = GetSquare();
+                // Mở rộng vùng chọn thêm 5 pixel cho mỗi cạnh
+                rect.Inflate(5, 5);
                 return rect.Contains(point);
             }
 
-            private Rectangle GetSquare()
+            public Rectangle GetSquare()
             {
-                int size = Math.Max(Math.Abs(EndPoint.X - StartPoint.X), Math.Abs(EndPoint.Y - StartPoint.Y));
+                int size = Math.Max(Math.Abs(EndPoint.X - StartPoint.X), Math.Abs(EndPoint.Y - StartPoint.Y)) + 1;
                 int x = StartPoint.X;
                 int y = StartPoint.Y;
 
-                if (EndPoint.X < StartPoint.X) x = StartPoint.X - size;
-                if (EndPoint.Y < StartPoint.Y) y = StartPoint.Y - size;
+                if (EndPoint.X < StartPoint.X) x = StartPoint.X - size + 1;
+                if (EndPoint.Y < StartPoint.Y) y = StartPoint.Y - size + 1;
 
                 return new Rectangle(x, y, size, size);
             }
@@ -353,14 +370,14 @@ namespace Paint
                 float radius = rect.Width / 2f;
 
                 float distance = (float)Math.Sqrt(
-                    Math.Pow(point.X - centerX, 2) + 
+                    Math.Pow(point.X - centerX, 2) +
                     Math.Pow(point.Y - centerY, 2)
                 );
 
-                return distance <= radius;
+                return distance <= radius + 5;
             }
 
-            private Rectangle GetCircle()
+            public Rectangle GetCircle()
             {
                 int size = Math.Max(Math.Abs(EndPoint.X - StartPoint.X), Math.Abs(EndPoint.Y - StartPoint.Y));
                 int x = StartPoint.X;
@@ -379,12 +396,12 @@ namespace Paint
         public Form1()
         {
             InitializeComponent();
-            
+
             // Enable double buffering for smooth drawing
-            typeof(Panel).InvokeMember("DoubleBuffered", 
-                System.Reflection.BindingFlags.SetProperty | 
-                System.Reflection.BindingFlags.Instance | 
-                System.Reflection.BindingFlags.NonPublic, 
+            typeof(Panel).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
                 null, panel_khungve, new object[] { true });
 
             // Set panel properties
@@ -424,6 +441,8 @@ namespace Paint
         private void btnDuongThang_Click(object sender, EventArgs e)
         {
             currentShapeType = ShapeType.Line;
+            isDrawing = false;
+            currentShape = null;
             trackBarCurvature.Visible = false;
         }
 
@@ -436,36 +455,48 @@ namespace Paint
         private void btnEllipse_Click(object sender, EventArgs e)
         {
             currentShapeType = ShapeType.Ellipse;
+            isDrawing = false;
+            currentShape = null;
             trackBarCurvature.Visible = false;
         }
 
         private void btnHcn_Click(object sender, EventArgs e)
         {
             currentShapeType = ShapeType.Rectangle;
+            isDrawing = false;
+            currentShape = null;
             trackBarCurvature.Visible = false;
         }
 
         private void btnHV_Click(object sender, EventArgs e)
         {
             currentShapeType = ShapeType.Square;
+            isDrawing = false;
+            currentShape = null;
             trackBarCurvature.Visible = false;
         }
 
         private void btnHinhTron_Click(object sender, EventArgs e)
         {
             currentShapeType = ShapeType.Circle;
+            isDrawing = false;
+            currentShape = null;
             trackBarCurvature.Visible = false;
         }
 
         private void btnDuongCong_Click(object sender, EventArgs e)
         {
             currentShapeType = ShapeType.BezierCurve;
+            isDrawing = false;
+            currentShape = null;
             trackBarCurvature.Visible = true;
         }
 
         private void btnDaGiac_Click(object sender, EventArgs e)
         {
             currentShapeType = ShapeType.Polygon;
+            isDrawing = false;
+            currentShape = null;
             trackBarCurvature.Visible = false;
         }
 
@@ -557,7 +588,7 @@ namespace Paint
                             bmp.Save(saveFileDialog.FileName);
                         }
                     }
-                    
+
                     // Xóa tất cả các hình sau khi đã xử lý việc lưu
                     shapes.Clear();
                     panel_khungve.Invalidate();
@@ -593,12 +624,35 @@ namespace Paint
 
         private void Chonvungdave_Click(object sender, EventArgs e)
         {
-
+            isMoving = false;
+            isSelecting = true;
+            isDrawing = false;
+            currentShapeType = ShapeType.Line; // Reset shape type
+            trackBarCurvature.Visible = false;
+            panel_khungve.Invalidate();
         }
 
         private void NhomCacHinh_Click(object sender, EventArgs e)
         {
+            isMoving = true;
+            isSelecting = false;
+            isDrawing = false;
+            currentShape = null;
+            trackBarCurvature.Visible = false;
+            panel_khungve.Invalidate();
+        }
 
+        private void XoaMenu_Click(object sender, EventArgs e)
+        {
+            if (selectedShapes.Count > 0)
+            {
+                foreach (Shape shape in selectedShapes.ToList())
+                {
+                    shapes.Remove(shape);
+                }
+                selectedShapes.Clear();
+                panel_khungve.Invalidate();
+            }
         }
 
         private Point ClampToPanel(Point point)
@@ -615,20 +669,7 @@ namespace Paint
 
             if (e.Button == MouseButtons.Left)
             {
-                if (isMoving)
-                {
-                    selectedShape = null;
-                    foreach (Shape shape in shapes.Reverse<Shape>())
-                    {
-                        if (shape.Contains(e.Location))
-                        {
-                            selectedShape = shape;
-                            lastPoint = e.Location;
-                            break;
-                        }
-                    }
-                }
-                else if (currentShapeType == ShapeType.Curve || currentShapeType == ShapeType.Polygon)
+                if (currentShapeType == ShapeType.Curve || currentShapeType == ShapeType.Polygon)
                 {
                     if (!isDrawing)
                     {
@@ -648,18 +689,63 @@ namespace Paint
                             currentShape = null;
                         }
                     }
-                    panel_khungve.Invalidate();
                 }
                 else
                 {
-                    isDrawing = true;
-                    startPoint = ClampToPanel(e.Location);
-                    CreateNewShape();
+                    // Kiểm tra xem có click vào hình đã chọn không
+                    bool hitSelected = false;
+                    foreach (Shape shape in selectedShapes)
+                    {
+                        if (shape.Contains(e.Location))
+                        {
+                            hitSelected = true;
+                            isMoving = true;
+                            lastPoint = e.Location;
+                            break;
+                        }
+                    }
+
+                    if (!hitSelected)
+                    {
+                        // Nếu click vào khoảng trống và không giữ Ctrl, bỏ chọn tất cả
+                        if (!ModifierKeys.HasFlag(Keys.Control))
+                        {
+                            selectedShapes.Clear();
+                        }
+
+                        // Kiểm tra xem có click vào hình nào không
+                        foreach (Shape shape in shapes.Reverse<Shape>())
+                        {
+                            if (shape.Contains(e.Location))
+                            {
+                                if (!selectedShapes.Contains(shape))
+                                {
+                                    selectedShapes.Add(shape);
+                                    isMoving = true;
+                                    lastPoint = e.Location;
+                                }
+                                else if (ModifierKeys.HasFlag(Keys.Control))
+                                {
+                                    selectedShapes.Remove(shape);
+                                }
+                                break;
+                            }
+                        }
+
+                        // Nếu không click vào hình nào và không đang di chuyển, bắt đầu vẽ hình mới
+                        if (!isMoving)
+                        {
+                            isDrawing = true;
+                            startPoint = ClampToPanel(e.Location);
+                            CreateNewShape();
+                        }
+                    }
                 }
+                panel_khungve.Invalidate();
             }
             else if (e.Button == MouseButtons.Right && currentShapeType == ShapeType.Polygon)
             {
-                if (isDrawing && currentShape.Points.Count >= 3)
+                if (isDrawing && currentShape != null && currentShape.Points.Count >= 3)
                 {
                     isDrawing = false;
                     shapes.Add(currentShape);
@@ -673,38 +759,45 @@ namespace Paint
         {
             Point clampedLocation = ClampToPanel(e.Location);
 
-            if (isMoving && selectedShape != null && e.Button == MouseButtons.Left)
+            if (isMoving && selectedShapes.Count > 0 && e.Button == MouseButtons.Left)
             {
                 int dx = clampedLocation.X - lastPoint.X;
                 int dy = clampedLocation.Y - lastPoint.Y;
 
-                // Kiểm tra xem việc di chuyển có đưa hình ra ngoài panel không
-                Rectangle bounds = GetShapeBounds(selectedShape);
-                bounds.Offset(dx, dy);
-
-                if (panel_khungve.ClientRectangle.Contains(bounds))
+                bool canMove = true;
+                foreach (Shape shape in selectedShapes)
                 {
-                    selectedShape.StartPoint = new Point(selectedShape.StartPoint.X + dx, selectedShape.StartPoint.Y + dy);
-                    selectedShape.EndPoint = new Point(selectedShape.EndPoint.X + dx, selectedShape.EndPoint.Y + dy);
-
-                    for (int i = 0; i < selectedShape.Points.Count; i++)
+                    Rectangle bounds = GetShapeBounds(shape);
+                    bounds.Offset(dx, dy);
+                    if (!panel_khungve.ClientRectangle.Contains(bounds))
                     {
-                        selectedShape.Points[i] = new Point(selectedShape.Points[i].X + dx, selectedShape.Points[i].Y + dy);
+                        canMove = false;
+                        break;
                     }
-
-                    lastPoint = clampedLocation;
-                    panel_khungve.Invalidate();
                 }
+
+                if (canMove)
+                {
+                    foreach (Shape shape in selectedShapes)
+                    {
+                        shape.StartPoint = new Point(shape.StartPoint.X + dx, shape.StartPoint.Y + dy);
+                        shape.EndPoint = new Point(shape.EndPoint.X + dx, shape.EndPoint.Y + dy);
+
+                        for (int i = 0; i < shape.Points.Count; i++)
+                        {
+                            shape.Points[i] = new Point(shape.Points[i].X + dx, shape.Points[i].Y + dy);
+                        }
+                    }
+                    lastPoint = clampedLocation;
+                }
+                panel_khungve.Invalidate();
             }
-            else if (isDrawing)
+            else if (isDrawing && currentShape != null)
             {
                 endPoint = clampedLocation;
-                if (currentShape != null)
+                if (currentShapeType != ShapeType.Curve && currentShapeType != ShapeType.Polygon)
                 {
-                    if (currentShapeType != ShapeType.Curve && currentShapeType != ShapeType.Polygon)
-                    {
-                        currentShape.EndPoint = endPoint;
-                    }
+                    currentShape.EndPoint = endPoint;
                 }
                 panel_khungve.Invalidate();
             }
@@ -739,61 +832,86 @@ namespace Paint
         {
             if (isMoving)
             {
-                selectedShape = null;
+                isMoving = false;
             }
             else if (isDrawing && e.Button == MouseButtons.Left)
             {
                 if (currentShapeType != ShapeType.Curve && currentShapeType != ShapeType.Polygon)
                 {
-                    isDrawing = false;
                     endPoint = ClampToPanel(e.Location);
                     currentShape.EndPoint = endPoint;
-
-                    // Kiểm tra xem hình có nằm trong panel không
-                    Rectangle bounds = GetShapeBounds(currentShape);
-                    if (panel_khungve.ClientRectangle.Contains(bounds))
-                    {
-                        shapes.Add(currentShape);
-                    }
-                    
+                    shapes.Add(currentShape);
                     currentShape = null;
-                    panel_khungve.Invalidate();
+                    isDrawing = false;
                 }
+                panel_khungve.Invalidate();
             }
         }
 
         private void Panel_khungve_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            
+
             foreach (Shape shape in shapes)
             {
                 shape.Draw(e.Graphics);
             }
+
             if (currentShape != null)
             {
                 currentShape.Draw(e.Graphics);
             }
-            if (selectedShape != null)
+
+            // Vẽ viền highlight cho các hình được chọn
+            foreach (Shape shape in selectedShapes)
             {
-                using (Pen pen = new Pen(Color.Red, 2) { DashStyle = DashStyle.Dash })
+                using (Pen highlightPen = new Pen(Color.Red, 2) { DashStyle = DashStyle.Dash })
                 {
-                    if (selectedShape is RectangleShape || selectedShape is EllipseShape)
+                    if (shape is RectangleShape)
                     {
-                        Rectangle rect = ((RectangleShape)selectedShape).GetRectangle();
-                        e.Graphics.DrawRectangle(pen, rect);
+                        Rectangle rect = ((RectangleShape)shape).GetRectangle();
+                        e.Graphics.DrawRectangle(highlightPen, rect);
                     }
-                    else if (selectedShape is LineShape)
+                    else if (shape is EllipseShape)
                     {
-                        e.Graphics.DrawLine(pen, selectedShape.StartPoint, selectedShape.EndPoint);
+                        Rectangle rect = ((EllipseShape)shape).GetRectangle();
+                        e.Graphics.DrawEllipse(highlightPen, rect);
                     }
-                    else if (selectedShape is CurveShape && selectedShape.Points.Count > 1)
+                    else if (shape is SquareShape)
                     {
-                        e.Graphics.DrawCurve(pen, selectedShape.Points.ToArray());
+                        Rectangle rect = ((SquareShape)shape).GetSquare();
+                        e.Graphics.DrawRectangle(highlightPen, rect);
                     }
-                    else if (selectedShape is PolygonShape && selectedShape.Points.Count > 2)
+                    else if (shape is CircleShape)
                     {
-                        e.Graphics.DrawPolygon(pen, selectedShape.Points.ToArray());
+                        Rectangle rect = ((CircleShape)shape).GetCircle();
+                        e.Graphics.DrawEllipse(highlightPen, rect);
+                    }
+                    else if (shape is LineShape)
+                    {
+                        e.Graphics.DrawLine(highlightPen, shape.StartPoint, shape.EndPoint);
+                    }
+                    else if (shape is CurveShape && shape.Points.Count > 1)
+                    {
+                        e.Graphics.DrawCurve(highlightPen, shape.Points.ToArray());
+                    }
+                    else if (shape is PolygonShape && shape.Points.Count > 2)
+                    {
+                        e.Graphics.DrawPolygon(highlightPen, shape.Points.ToArray());
+                    }
+                    else if (shape is BezierCurveShape)
+                    {
+                        Point controlPoint1 = new Point(
+                            shape.StartPoint.X + (int)((shape.EndPoint.X - shape.StartPoint.X) * 0.5f),
+                            shape.StartPoint.Y - (int)((shape.EndPoint.Y - shape.StartPoint.Y) * ((BezierCurveShape)shape).GetCurvature())
+                        );
+
+                        Point controlPoint2 = new Point(
+                            shape.StartPoint.X + (int)((shape.EndPoint.X - shape.StartPoint.X) * 0.5f),
+                            shape.StartPoint.Y - (int)((shape.EndPoint.Y - shape.StartPoint.Y) * ((BezierCurveShape)shape).GetCurvature())
+                        );
+
+                        e.Graphics.DrawBezier(highlightPen, shape.StartPoint, controlPoint1, controlPoint2, shape.EndPoint);
                     }
                 }
             }
@@ -849,6 +967,24 @@ namespace Paint
                 currentShape.PenWidth = penWidth;
                 currentShape.PenStyle = penStyle;
             }
+        }
+
+        private bool IsShapeInSelectionRect(Shape shape, Rectangle selectionRect)
+        {
+            // Kiểm tra điểm đầu và cuối
+            if (selectionRect.Contains(shape.StartPoint) && selectionRect.Contains(shape.EndPoint))
+                return true;
+
+            // Kiểm tra các điểm trong đa giác hoặc đường cong
+            foreach (Point point in shape.Points)
+            {
+                if (!selectionRect.Contains(point))
+                    return false;
+            }
+
+            // Kiểm tra hình chữ nhật bao quanh
+            Rectangle shapeBounds = GetShapeBounds(shape);
+            return selectionRect.Contains(shapeBounds);
         }
     }
 }

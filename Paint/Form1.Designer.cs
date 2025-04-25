@@ -51,6 +51,7 @@
             this.btnEllipse = new System.Windows.Forms.Button();
             this.btnDuongThang = new System.Windows.Forms.Button();
             this.panel_khungve = new System.Windows.Forms.Panel();
+            this.XoaMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel_chucnang.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numDoDay)).BeginInit();
@@ -65,7 +66,8 @@
             this.Chonvungdave,
             this.NhomCacHinh,
             this.GoCacHinh,
-            this.PhongToHinh});
+            this.PhongToHinh,
+            this.XoaMenu});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
@@ -85,14 +87,14 @@
             // MofileMoi
             // 
             this.MofileMoi.Name = "MofileMoi";
-            this.MofileMoi.Size = new System.Drawing.Size(180, 22);
+            this.MofileMoi.Size = new System.Drawing.Size(139, 22);
             this.MofileMoi.Text = "Mở bản mới";
             this.MofileMoi.Click += new System.EventHandler(this.MofileMoi_Click);
             // 
             // Luufiledave
             // 
             this.Luufiledave.Name = "Luufiledave";
-            this.Luufiledave.Size = new System.Drawing.Size(180, 22);
+            this.Luufiledave.Size = new System.Drawing.Size(139, 22);
             this.Luufiledave.Text = "Lưu";
             this.Luufiledave.Click += new System.EventHandler(this.Luufiledave_Click);
             // 
@@ -296,6 +298,13 @@
             this.panel_khungve.Size = new System.Drawing.Size(1182, 624);
             this.panel_khungve.TabIndex = 2;
             // 
+            // XoaMenu
+            // 
+            this.XoaMenu.Name = "XoaMenu";
+            this.XoaMenu.Size = new System.Drawing.Size(42, 20);
+            this.XoaMenu.Text = "Xóa ";
+            this.XoaMenu.Click += new System.EventHandler(this.XoaMenu_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -344,6 +353,7 @@
         private System.Windows.Forms.ComboBox cmbKieuVe;
         private System.Windows.Forms.Button btnMauNen;
         private System.Windows.Forms.NumericUpDown numDoDay;
+        private System.Windows.Forms.ToolStripMenuItem XoaMenu;
     }
 }
 
