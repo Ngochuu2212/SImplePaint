@@ -35,7 +35,6 @@
             this.Chonvungdave = new System.Windows.Forms.ToolStripMenuItem();
             this.NhomCacHinh = new System.Windows.Forms.ToolStripMenuItem();
             this.GoCacHinh = new System.Windows.Forms.ToolStripMenuItem();
-            this.PhongToHinh = new System.Windows.Forms.ToolStripMenuItem();
             this.panel_chucnang = new System.Windows.Forms.Panel();
             this.cmbKieuVe = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -66,7 +65,6 @@
             this.Chonvungdave,
             this.NhomCacHinh,
             this.GoCacHinh,
-            this.PhongToHinh,
             this.XoaMenu});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -117,12 +115,7 @@
             this.GoCacHinh.Name = "GoCacHinh";
             this.GoCacHinh.Size = new System.Drawing.Size(69, 20);
             this.GoCacHinh.Text = "Gỡ nhóm";
-            // 
-            // PhongToHinh
-            // 
-            this.PhongToHinh.Name = "PhongToHinh";
-            this.PhongToHinh.Size = new System.Drawing.Size(121, 20);
-            this.PhongToHinh.Text = "Phóng to / thu nhỏ";
+            this.GoCacHinh.Click += new System.EventHandler(this.GoCacHinh_Click);
             // 
             // panel_chucnang
             // 
@@ -346,7 +339,6 @@
         private System.Windows.Forms.ToolStripMenuItem Chonvungdave;
         private System.Windows.Forms.ToolStripMenuItem NhomCacHinh;
         private System.Windows.Forms.ToolStripMenuItem GoCacHinh;
-        private System.Windows.Forms.ToolStripMenuItem PhongToHinh;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnMauDuong;
         private System.Windows.Forms.Label label2;

@@ -17,6 +17,7 @@ namespace Paint
         private Point endPoint;
         private bool isDrawing = false;
         private List<Shape> shapes = new List<Shape>();
+        private List<Group> groups = new List<Group>();
         private Shape currentShape;
         private Color penColor = Color.Black;
         private Color brushColor = Color.White;
@@ -30,6 +31,7 @@ namespace Paint
         private bool isSelecting = false;
         private Rectangle selectionRect;
         private Point selectionStart;
+        private bool isGrouping = false;
 
         private enum ShapeType
         {
@@ -393,6 +395,79 @@ namespace Paint
         private BezierCurveShape currentBezierCurve;
         private TrackBar trackBarCurvature;
 
+        private class Group
+        {
+            public List<Shape> Shapes { get; set; } = new List<Shape>();
+            public bool IsSelected { get; set; } = false;
+
+            public void Draw(Graphics g)
+            {
+                foreach (var shape in Shapes)
+                {
+                    shape.Draw(g);
+                }
+
+                if (IsSelected)
+                {
+                    // Vẽ khung bao quanh nhóm
+                    Rectangle bounds = GetGroupBounds();
+                    using (Pen highlightPen = new Pen(Color.Blue, 2) { DashStyle = DashStyle.Dash })
+                    {
+                        g.DrawRectangle(highlightPen, bounds);
+                    }
+                }
+            }
+
+            public Rectangle GetGroupBounds()
+            {
+                if (Shapes.Count == 0) return Rectangle.Empty;
+
+                int minX = int.MaxValue;
+                int minY = int.MaxValue;
+                int maxX = int.MinValue;
+                int maxY = int.MinValue;
+
+                foreach (var shape in Shapes)
+                {
+                    // Xét điểm đầu và cuối
+                    minX = Math.Min(minX, Math.Min(shape.StartPoint.X, shape.EndPoint.X));
+                    minY = Math.Min(minY, Math.Min(shape.StartPoint.Y, shape.EndPoint.Y));
+                    maxX = Math.Max(maxX, Math.Max(shape.StartPoint.X, shape.EndPoint.X));
+                    maxY = Math.Max(maxY, Math.Max(shape.StartPoint.Y, shape.EndPoint.Y));
+
+                    // Xét các điểm trong danh sách Points
+                    foreach (Point p in shape.Points)
+                    {
+                        minX = Math.Min(minX, p.X);
+                        minY = Math.Min(minY, p.Y);
+                        maxX = Math.Max(maxX, p.X);
+                        maxY = Math.Max(maxY, p.Y);
+                    }
+                }
+
+                return new Rectangle(minX, minY, maxX - minX + 1, maxY - minY + 1);
+            }
+
+            public bool Contains(Point point)
+            {
+                return GetGroupBounds().Contains(point);
+            }
+
+            public void Move(int dx, int dy)
+            {
+                foreach (var shape in Shapes)
+                {
+                    shape.StartPoint = new Point(shape.StartPoint.X + dx, shape.StartPoint.Y + dy);
+                    shape.EndPoint = new Point(shape.EndPoint.X + dx, shape.EndPoint.Y + dy);
+
+                    for (int i = 0; i < shape.Points.Count; i++)
+                    {
+                        shape.Points[i] = new Point(shape.Points[i].X + dx, shape.Points[i].Y + dy);
+                    }
+                }
+            }
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -424,6 +499,7 @@ namespace Paint
             panel_khungve.MouseMove += Panel_khungve_MouseMove;
             panel_khungve.MouseUp += Panel_khungve_MouseUp;
             panel_khungve.Paint += Panel_khungve_Paint;
+            panel_khungve.MouseWheel += Panel_khungve_MouseWheel;
         }
 
         private void selectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -554,7 +630,7 @@ namespace Paint
 
         private void MofileMoi_Click(object sender, EventArgs e)
         {
-            if (shapes.Count > 0)
+            if (shapes.Count > 0 || groups.Count > 0)
             {
                 DialogResult result = MessageBox.Show(
                     "Bạn có chắc muốn tạo bản vẽ mới không?\nCác hình vẽ hiện tại sẽ bị xóa.",
@@ -584,41 +660,116 @@ namespace Paint
                                 {
                                     shape.Draw(g);
                                 }
+                                foreach (var group in groups)
+                                {
+                                    foreach (var shape in group.Shapes)
+                                    {
+                                        shape.Draw(g);
+                                    }
+                                }
                             }
                             bmp.Save(saveFileDialog.FileName);
                         }
                     }
 
-                    // Xóa tất cả các hình sau khi đã xử lý việc lưu
+                    // Xóa tất cả các hình và nhóm
                     shapes.Clear();
+                    groups.Clear();
+                    selectedShapes.Clear();
+                    isGrouping = false;
                     panel_khungve.Invalidate();
                 }
-                // Nếu người dùng chọn No, không làm gì cả, giữ nguyên bản vẽ
             }
             else
             {
-                // Nếu không có hình vẽ nào, không cần hỏi
+                // Nếu không có hình vẽ và nhóm nào, không cần hỏi
                 shapes.Clear();
+                groups.Clear();
+                selectedShapes.Clear();
+                isGrouping = false;
                 panel_khungve.Invalidate();
             }
         }
 
         private void Luufiledave_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            if (groups.Count > 0)
             {
-                Bitmap bmp = new Bitmap(panel_khungve.Width, panel_khungve.Height);
-                using (Graphics g = Graphics.FromImage(bmp))
+                // Hiển thị dialog cho người dùng chọn nhóm để lưu
+                using (var groupSelectForm = new Form())
                 {
-                    g.Clear(panel_khungve.BackColor);
-                    foreach (Shape shape in shapes)
+                    groupSelectForm.Text = "Chọn nhóm để lưu";
+                    groupSelectForm.Size = new Size(300, 400);
+                    groupSelectForm.StartPosition = FormStartPosition.CenterParent;
+
+                    var listBox = new ListBox();
+                    listBox.Dock = DockStyle.Fill;
+                    for (int i = 0; i < groups.Count; i++)
                     {
-                        shape.Draw(g);
+                        listBox.Items.Add($"Nhóm {i + 1} ({groups[i].Shapes.Count} hình)");
+                    }
+                    listBox.Items.Add("Tất cả các hình");
+
+                    var btnOK = new Button();
+                    btnOK.Text = "OK";
+                    btnOK.DialogResult = DialogResult.OK;
+                    btnOK.Dock = DockStyle.Bottom;
+
+                    groupSelectForm.Controls.Add(listBox);
+                    groupSelectForm.Controls.Add(btnOK);
+
+                    if (groupSelectForm.ShowDialog() == DialogResult.OK && listBox.SelectedIndex != -1)
+                    {
+                        SaveFileDialog saveFileDialog = new SaveFileDialog();
+                        saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            Bitmap bmp = new Bitmap(panel_khungve.Width, panel_khungve.Height);
+                            using (Graphics g = Graphics.FromImage(bmp))
+                            {
+                                g.Clear(panel_khungve.BackColor);
+
+                                if (listBox.SelectedIndex == groups.Count)
+                                {
+                                    // Lưu tất cả các hình
+                                    foreach (Shape shape in shapes)
+                                    {
+                                        shape.Draw(g);
+                                    }
+                                    foreach (var group in groups)
+                                    {
+                                        group.Draw(g);
+                                    }
+                                }
+                                else
+                                {
+                                    // Lưu chỉ nhóm được chọn
+                                    groups[listBox.SelectedIndex].Draw(g);
+                                }
+                            }
+                            bmp.Save(saveFileDialog.FileName);
+                        }
                     }
                 }
-                bmp.Save(saveFileDialog.FileName);
+            }
+            else
+            {
+                // Nếu không có nhóm nào, lưu tất cả các hình như bình thường
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    Bitmap bmp = new Bitmap(panel_khungve.Width, panel_khungve.Height);
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        g.Clear(panel_khungve.BackColor);
+                        foreach (Shape shape in shapes)
+                        {
+                            shape.Draw(g);
+                        }
+                    }
+                    bmp.Save(saveFileDialog.FileName);
+                }
             }
         }
 
@@ -627,18 +778,63 @@ namespace Paint
             isMoving = false;
             isSelecting = true;
             isDrawing = false;
-            currentShapeType = ShapeType.Line; // Reset shape type
+            currentShapeType = ShapeType.Line;
             trackBarCurvature.Visible = false;
+            panel_khungve.Cursor = Cursors.Cross;
             panel_khungve.Invalidate();
         }
 
         private void NhomCacHinh_Click(object sender, EventArgs e)
         {
-            isMoving = true;
-            isSelecting = false;
-            isDrawing = false;
-            currentShape = null;
-            trackBarCurvature.Visible = false;
+            // Tạo nhóm mới từ các hình đang được chọn
+            if (selectedShapes.Count > 0)
+            {
+                Group newGroup = new Group();
+                newGroup.Shapes.AddRange(selectedShapes);
+                groups.Add(newGroup);
+
+                // Xóa các hình đã được nhóm khỏi danh sách shapes
+                foreach (var shape in selectedShapes.ToList())
+                {
+                    shapes.Remove(shape);
+                }
+
+                selectedShapes.Clear();
+                isGrouping = true;
+                MessageBox.Show($"Đã tạo nhóm mới với {newGroup.Shapes.Count} hình", "Thông báo");
+                Console.WriteLine($"Số nhóm hiện tại: {groups.Count}, Số hình trong nhóm mới: {newGroup.Shapes.Count}");
+            }
+            panel_khungve.Invalidate();
+        }
+
+        private void GoNhom_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"Số nhóm trước khi gỡ: {groups.Count}");
+            // Gỡ nhóm - tách hình cuối cùng của nhóm cuối cùng
+            if (groups.Count > 0)
+            {
+                var lastGroup = groups[groups.Count - 1];
+                Console.WriteLine($"Số hình trong nhóm cuối: {lastGroup.Shapes.Count}");
+                if (lastGroup.Shapes.Count > 0)
+                {
+                    // Lấy hình cuối cùng từ nhóm
+                    var lastShape = lastGroup.Shapes[lastGroup.Shapes.Count - 1];
+                    lastGroup.Shapes.RemoveAt(lastGroup.Shapes.Count - 1);
+                    shapes.Add(lastShape);
+
+                    // Nếu nhóm không còn hình nào, xóa nhóm
+                    if (lastGroup.Shapes.Count == 0)
+                    {
+                        groups.RemoveAt(groups.Count - 1);
+                        if (groups.Count == 0)
+                        {
+                            isGrouping = false;
+                        }
+                    }
+                    MessageBox.Show("Đã gỡ một hình khỏi nhóm", "Thông báo");
+                    Console.WriteLine($"Số nhóm sau khi gỡ: {groups.Count}");
+                }
+            }
             panel_khungve.Invalidate();
         }
 
@@ -669,6 +865,15 @@ namespace Paint
 
             if (e.Button == MouseButtons.Left)
             {
+                if (isSelecting)
+                {
+                    selectionStart = e.Location;
+                    selectionRect = new Rectangle();
+                    selectedShapes.Clear();
+                    panel_khungve.Invalidate();
+                    return;
+                }
+
                 if (currentShapeType == ShapeType.Curve || currentShapeType == ShapeType.Polygon)
                 {
                     if (!isDrawing)
@@ -692,52 +897,82 @@ namespace Paint
                 }
                 else
                 {
-                    // Kiểm tra xem có click vào hình đã chọn không
-                    bool hitSelected = false;
-                    foreach (Shape shape in selectedShapes)
+                    // Kiểm tra xem có click vào nhóm nào không
+                    bool hitGroup = false;
+                    foreach (var group in groups)
                     {
-                        if (shape.Contains(e.Location))
+                        if (group.Contains(e.Location))
                         {
-                            hitSelected = true;
+                            if (!ModifierKeys.HasFlag(Keys.Control))
+                            {
+                                // Bỏ chọn tất cả các nhóm khác
+                                foreach (var g in groups)
+                                {
+                                    g.IsSelected = false;
+                                }
+                                selectedShapes.Clear();
+                            }
+                            group.IsSelected = !group.IsSelected;
                             isMoving = true;
                             lastPoint = e.Location;
+                            hitGroup = true;
                             break;
                         }
                     }
 
-                    if (!hitSelected)
+                    if (!hitGroup)
                     {
-                        // Nếu click vào khoảng trống và không giữ Ctrl, bỏ chọn tất cả
-                        if (!ModifierKeys.HasFlag(Keys.Control))
-                        {
-                            selectedShapes.Clear();
-                        }
-
-                        // Kiểm tra xem có click vào hình nào không
-                        foreach (Shape shape in shapes.Reverse<Shape>())
+                        // Kiểm tra xem có click vào hình đã chọn không
+                        bool hitSelected = false;
+                        foreach (Shape shape in selectedShapes)
                         {
                             if (shape.Contains(e.Location))
                             {
-                                if (!selectedShapes.Contains(shape))
-                                {
-                                    selectedShapes.Add(shape);
-                                    isMoving = true;
-                                    lastPoint = e.Location;
-                                }
-                                else if (ModifierKeys.HasFlag(Keys.Control))
-                                {
-                                    selectedShapes.Remove(shape);
-                                }
+                                hitSelected = true;
+                                isMoving = true;
+                                lastPoint = e.Location;
                                 break;
                             }
                         }
 
-                        // Nếu không click vào hình nào và không đang di chuyển, bắt đầu vẽ hình mới
-                        if (!isMoving)
+                        if (!hitSelected)
                         {
-                            isDrawing = true;
-                            startPoint = ClampToPanel(e.Location);
-                            CreateNewShape();
+                            // Nếu click vào khoảng trống và không giữ Ctrl, bỏ chọn tất cả
+                            if (!ModifierKeys.HasFlag(Keys.Control))
+                            {
+                                selectedShapes.Clear();
+                                foreach (var group in groups)
+                                {
+                                    group.IsSelected = false;
+                                }
+                            }
+
+                            // Kiểm tra xem có click vào hình nào không
+                            foreach (Shape shape in shapes.Reverse<Shape>())
+                            {
+                                if (shape.Contains(e.Location))
+                                {
+                                    if (!selectedShapes.Contains(shape))
+                                    {
+                                        selectedShapes.Add(shape);
+                                        isMoving = true;
+                                        lastPoint = e.Location;
+                                    }
+                                    else if (ModifierKeys.HasFlag(Keys.Control))
+                                    {
+                                        selectedShapes.Remove(shape);
+                                    }
+                                    break;
+                                }
+                            }
+
+                            // Nếu không click vào hình nào và không đang di chuyển, bắt đầu vẽ hình mới
+                            if (!isMoving)
+                            {
+                                isDrawing = true;
+                                startPoint = ClampToPanel(e.Location);
+                                CreateNewShape();
+                            }
                         }
                     }
                 }
@@ -759,12 +994,37 @@ namespace Paint
         {
             Point clampedLocation = ClampToPanel(e.Location);
 
-            if (isMoving && selectedShapes.Count > 0 && e.Button == MouseButtons.Left)
+            if (isSelecting && e.Button == MouseButtons.Left)
+            {
+                int x = Math.Min(selectionStart.X, clampedLocation.X);
+                int y = Math.Min(selectionStart.Y, clampedLocation.Y);
+                int width = Math.Abs(clampedLocation.X - selectionStart.X);
+                int height = Math.Abs(clampedLocation.Y - selectionStart.Y);
+                selectionRect = new Rectangle(x, y, width, height);
+                panel_khungve.Invalidate();
+                return;
+            }
+
+            if (isMoving && e.Button == MouseButtons.Left)
             {
                 int dx = clampedLocation.X - lastPoint.X;
                 int dy = clampedLocation.Y - lastPoint.Y;
 
                 bool canMove = true;
+
+                // Kiểm tra giới hạn di chuyển cho các nhóm được chọn
+                foreach (var group in groups.Where(g => g.IsSelected))
+                {
+                    Rectangle bounds = group.GetGroupBounds();
+                    bounds.Offset(dx, dy);
+                    if (!panel_khungve.ClientRectangle.Contains(bounds))
+                    {
+                        canMove = false;
+                        break;
+                    }
+                }
+
+                // Kiểm tra giới hạn di chuyển cho các hình được chọn
                 foreach (Shape shape in selectedShapes)
                 {
                     Rectangle bounds = GetShapeBounds(shape);
@@ -778,6 +1038,13 @@ namespace Paint
 
                 if (canMove)
                 {
+                    // Di chuyển các nhóm được chọn
+                    foreach (var group in groups.Where(g => g.IsSelected))
+                    {
+                        group.Move(dx, dy);
+                    }
+
+                    // Di chuyển các hình được chọn
                     foreach (Shape shape in selectedShapes)
                     {
                         shape.StartPoint = new Point(shape.StartPoint.X + dx, shape.StartPoint.Y + dy);
@@ -830,6 +1097,23 @@ namespace Paint
 
         private void Panel_khungve_MouseUp(object sender, MouseEventArgs e)
         {
+            if (isSelecting && e.Button == MouseButtons.Left)
+            {
+                foreach (Shape shape in shapes)
+                {
+                    if (IsShapeInSelectionRect(shape, selectionRect))
+                    {
+                        selectedShapes.Add(shape);
+                    }
+                }
+
+                selectionRect = Rectangle.Empty;
+                isSelecting = false;
+                panel_khungve.Cursor = Cursors.Default;
+                panel_khungve.Invalidate();
+                return;
+            }
+
             if (isMoving)
             {
                 isMoving = false;
@@ -852,9 +1136,29 @@ namespace Paint
         {
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
+            // Vẽ các hình không thuộc nhóm
             foreach (Shape shape in shapes)
             {
                 shape.Draw(e.Graphics);
+            }
+
+            // Vẽ các nhóm
+            foreach (var group in groups)
+            {
+                foreach (var shape in group.Shapes)
+                {
+                    shape.Draw(e.Graphics);
+                }
+
+                if (group.IsSelected)
+                {
+                    // Vẽ khung bao quanh nhóm
+                    Rectangle bounds = group.GetGroupBounds();
+                    using (Pen highlightPen = new Pen(Color.Blue, 2) { DashStyle = DashStyle.Dash })
+                    {
+                        e.Graphics.DrawRectangle(highlightPen, bounds);
+                    }
+                }
             }
 
             if (currentShape != null)
@@ -915,6 +1219,18 @@ namespace Paint
                     }
                 }
             }
+
+            if (isSelecting && !selectionRect.IsEmpty)
+            {
+                using (Pen selectionPen = new Pen(Color.Gray, 1) { DashStyle = DashStyle.Dash })
+                {
+                    e.Graphics.DrawRectangle(selectionPen, selectionRect);
+                    using (Brush selectionBrush = new SolidBrush(Color.FromArgb(50, Color.LightBlue)))
+                    {
+                        e.Graphics.FillRectangle(selectionBrush, selectionRect);
+                    }
+                }
+            }
         }
 
         private void TrackBarCurvature_ValueChanged(object sender, EventArgs e)
@@ -971,20 +1287,114 @@ namespace Paint
 
         private bool IsShapeInSelectionRect(Shape shape, Rectangle selectionRect)
         {
-            // Kiểm tra điểm đầu và cuối
-            if (selectionRect.Contains(shape.StartPoint) && selectionRect.Contains(shape.EndPoint))
-                return true;
-
-            // Kiểm tra các điểm trong đa giác hoặc đường cong
-            foreach (Point point in shape.Points)
+            if (shape is RectangleShape)
             {
-                if (!selectionRect.Contains(point))
-                    return false;
+                return selectionRect.Contains(((RectangleShape)shape).GetRectangle());
+            }
+            else if (shape is EllipseShape)
+            {
+                return selectionRect.Contains(((EllipseShape)shape).GetRectangle());
+            }
+            else if (shape is SquareShape)
+            {
+                return selectionRect.Contains(((SquareShape)shape).GetSquare());
+            }
+            else if (shape is CircleShape)
+            {
+                return selectionRect.Contains(((CircleShape)shape).GetCircle());
+            }
+            else if (shape is LineShape)
+            {
+                return selectionRect.Contains(shape.StartPoint) && selectionRect.Contains(shape.EndPoint);
+            }
+            else if (shape is CurveShape || shape is PolygonShape)
+            {
+                foreach (Point point in shape.Points)
+                {
+                    if (!selectionRect.Contains(point))
+                        return false;
+                }
+                return true;
+            }
+            else if (shape is BezierCurveShape)
+            {
+                return selectionRect.Contains(shape.StartPoint) && selectionRect.Contains(shape.EndPoint);
             }
 
-            // Kiểm tra hình chữ nhật bao quanh
-            Rectangle shapeBounds = GetShapeBounds(shape);
-            return selectionRect.Contains(shapeBounds);
+            return false;
+        }
+
+        private void GoCacHinh_Click(object sender, EventArgs e)
+        {
+            // Gỡ nhóm - tách hình cuối cùng của nhóm cuối cùng
+            if (groups.Count > 0)
+            {
+                var lastGroup = groups[groups.Count - 1];
+                if (lastGroup.Shapes.Count > 0)
+                {
+                    // Lấy hình cuối cùng từ nhóm
+                    var lastShape = lastGroup.Shapes[lastGroup.Shapes.Count - 1];
+                    lastGroup.Shapes.RemoveAt(lastGroup.Shapes.Count - 1);
+                    shapes.Add(lastShape);
+
+                    // Nếu nhóm không còn hình nào, xóa nhóm
+                    if (lastGroup.Shapes.Count == 0)
+                    {
+                        groups.RemoveAt(groups.Count - 1);
+                        if (groups.Count == 0)
+                        {
+                            isGrouping = false;
+                        }
+                    }
+                    MessageBox.Show("Đã gỡ một hình khỏi nhóm", "Thông báo");
+                }
+            }
+            panel_khungve.Invalidate();
+        }
+
+        private void Panel_khungve_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (ModifierKeys.HasFlag(Keys.Control))
+            {
+                float scale = e.Delta > 0 ? 1.1f : 0.9f;
+                Point center = e.Location;
+
+                foreach (Shape shape in selectedShapes)
+                {
+                    ScaleShape(shape, scale, center);
+                }
+
+                foreach (var group in groups.Where(g => g.IsSelected))
+                {
+                    foreach (var shape in group.Shapes)
+                    {
+                        ScaleShape(shape, scale, center);
+                    }
+                }
+
+                panel_khungve.Invalidate();
+            }
+        }
+
+        private void ScaleShape(Shape shape, float scale, Point center)
+        {
+            shape.StartPoint = new Point(
+                center.X + (int)((shape.StartPoint.X - center.X) * scale),
+                center.Y + (int)((shape.StartPoint.Y - center.Y) * scale)
+            );
+
+            shape.EndPoint = new Point(
+                center.X + (int)((shape.EndPoint.X - center.X) * scale),
+                center.Y + (int)((shape.EndPoint.Y - center.Y) * scale)
+            );
+
+            for (int i = 0; i < shape.Points.Count; i++)
+            {
+                shape.Points[i] = new Point(
+                    center.X + (int)((shape.Points[i].X - center.X) * scale),
+                    center.Y + (int)((shape.Points[i].Y - center.Y) * scale)
+                );
+            }
         }
     }
 }
