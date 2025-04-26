@@ -398,6 +398,7 @@ namespace Paint
         private class Group
         {
             public List<Shape> Shapes { get; set; } = new List<Shape>();
+            public List<Group> SubGroups { get; set; } = new List<Group>();
             public bool IsSelected { get; set; } = false;
 
             public void Draw(Graphics g)
@@ -407,9 +408,13 @@ namespace Paint
                     shape.Draw(g);
                 }
 
+                foreach (var group in SubGroups)
+                {
+                    group.Draw(g);
+                }
+
                 if (IsSelected)
                 {
-                    // Vẽ khung bao quanh nhóm
                     Rectangle bounds = GetGroupBounds();
                     using (Pen highlightPen = new Pen(Color.Blue, 2) { DashStyle = DashStyle.Dash })
                     {
@@ -420,7 +425,7 @@ namespace Paint
 
             public Rectangle GetGroupBounds()
             {
-                if (Shapes.Count == 0) return Rectangle.Empty;
+                if (Shapes.Count == 0 && SubGroups.Count == 0) return Rectangle.Empty;
 
                 int minX = int.MaxValue;
                 int minY = int.MaxValue;
@@ -429,13 +434,11 @@ namespace Paint
 
                 foreach (var shape in Shapes)
                 {
-                    // Xét điểm đầu và cuối
                     minX = Math.Min(minX, Math.Min(shape.StartPoint.X, shape.EndPoint.X));
                     minY = Math.Min(minY, Math.Min(shape.StartPoint.Y, shape.EndPoint.Y));
                     maxX = Math.Max(maxX, Math.Max(shape.StartPoint.X, shape.EndPoint.X));
                     maxY = Math.Max(maxY, Math.Max(shape.StartPoint.Y, shape.EndPoint.Y));
 
-                    // Xét các điểm trong danh sách Points
                     foreach (Point p in shape.Points)
                     {
                         minX = Math.Min(minX, p.X);
@@ -443,6 +446,15 @@ namespace Paint
                         maxX = Math.Max(maxX, p.X);
                         maxY = Math.Max(maxY, p.Y);
                     }
+                }
+
+                foreach (var group in SubGroups)
+                {
+                    Rectangle bounds = group.GetGroupBounds();
+                    minX = Math.Min(minX, bounds.X);
+                    minY = Math.Min(minY, bounds.Y);
+                    maxX = Math.Max(maxX, bounds.X + bounds.Width);
+                    maxY = Math.Max(maxY, bounds.Y + bounds.Height);
                 }
 
                 return new Rectangle(minX, minY, maxX - minX + 1, maxY - minY + 1);
@@ -465,6 +477,22 @@ namespace Paint
                         shape.Points[i] = new Point(shape.Points[i].X + dx, shape.Points[i].Y + dy);
                     }
                 }
+
+                foreach (var group in SubGroups)
+                {
+                    group.Move(dx, dy);
+                }
+            }
+
+            public List<Shape> GetAllShapes()
+            {
+                List<Shape> allShapes = new List<Shape>();
+                allShapes.AddRange(Shapes);
+                foreach (var group in SubGroups)
+                {
+                    allShapes.AddRange(group.GetAllShapes());
+                }
+                return allShapes;
             }
         }
 
@@ -581,7 +609,18 @@ namespace Paint
             ColorDialog colorDialog = new ColorDialog();
             if (colorDialog.ShowDialog() == DialogResult.OK)
             {
-                penColor = colorDialog.Color;
+                if (selectedShapes.Count > 0)
+                {
+                    foreach (Shape shape in selectedShapes)
+                    {
+                        shape.PenColor = colorDialog.Color;
+                    }
+                    panel_khungve.Invalidate();
+                }
+                else
+                {
+                    penColor = colorDialog.Color;
+                }
             }
         }
 
@@ -590,31 +629,70 @@ namespace Paint
             ColorDialog colorDialog = new ColorDialog();
             if (colorDialog.ShowDialog() == DialogResult.OK)
             {
-                brushColor = colorDialog.Color;
+                if (selectedShapes.Count > 0)
+                {
+                    foreach (Shape shape in selectedShapes)
+                    {
+                        shape.BrushColor = colorDialog.Color;
+                    }
+                    panel_khungve.Invalidate();
+                }
+                else
+                {
+                    brushColor = colorDialog.Color;
+                }
             }
         }
 
         private void numDoDay_ValueChanged(object sender, EventArgs e)
         {
-            penWidth = (float)numDoDay.Value;
+            if (selectedShapes.Count > 0)
+            {
+                foreach (Shape shape in selectedShapes)
+                {
+                    shape.PenWidth = (float)numDoDay.Value;
+                }
+                panel_khungve.Invalidate();
+            }
+            else
+            {
+                penWidth = (float)numDoDay.Value;
+            }
         }
 
         private void cmbKieuVe_SelectedIndexChanged(object sender, EventArgs e)
         {
+            DashStyle newStyle;
             switch (cmbKieuVe.SelectedIndex)
             {
                 case 0:
-                    penStyle = DashStyle.Solid;
+                    newStyle = DashStyle.Solid;
                     break;
                 case 1:
-                    penStyle = DashStyle.Dash;
+                    newStyle = DashStyle.Dash;
                     break;
                 case 2:
-                    penStyle = DashStyle.Dot;
+                    newStyle = DashStyle.Dot;
                     break;
                 case 3:
-                    penStyle = DashStyle.DashDot;
+                    newStyle = DashStyle.DashDot;
                     break;
+                default:
+                    newStyle = DashStyle.Solid;
+                    break;
+            }
+
+            if (selectedShapes.Count > 0)
+            {
+                foreach (Shape shape in selectedShapes)
+                {
+                    shape.PenStyle = newStyle;
+                }
+                panel_khungve.Invalidate();
+            }
+            else
+            {
+                penStyle = newStyle;
             }
         }
 
@@ -786,53 +864,58 @@ namespace Paint
 
         private void NhomCacHinh_Click(object sender, EventArgs e)
         {
-            // Tạo nhóm mới từ các hình đang được chọn
-            if (selectedShapes.Count > 0)
+            if (selectedShapes.Count > 0 || groups.Count(g => g.IsSelected) > 0)
             {
                 Group newGroup = new Group();
+                
+                // Thêm các hình được chọn vào nhóm mới
                 newGroup.Shapes.AddRange(selectedShapes);
-                groups.Add(newGroup);
-
-                // Xóa các hình đã được nhóm khỏi danh sách shapes
-                foreach (var shape in selectedShapes.ToList())
-                {
-                    shapes.Remove(shape);
-                }
-
+                shapes.RemoveAll(s => selectedShapes.Contains(s));
                 selectedShapes.Clear();
+
+                // Thêm các nhóm được chọn vào nhóm mới
+                var selectedGroups = groups.Where(g => g.IsSelected).ToList();
+                newGroup.SubGroups.AddRange(selectedGroups);
+                groups.RemoveAll(g => selectedGroups.Contains(g));
+
+                groups.Add(newGroup);
                 isGrouping = true;
-                MessageBox.Show($"Đã tạo nhóm mới với {newGroup.Shapes.Count} hình", "Thông báo");
-                Console.WriteLine($"Số nhóm hiện tại: {groups.Count}, Số hình trong nhóm mới: {newGroup.Shapes.Count}");
+                MessageBox.Show($"Đã tạo nhóm mới với {newGroup.GetAllShapes().Count} hình", "Thông báo");
             }
             panel_khungve.Invalidate();
         }
 
-        private void GoNhom_Click(object sender, EventArgs e)
+        private void GoCacHinh_Click(object sender, EventArgs e)
         {
-            Console.WriteLine($"Số nhóm trước khi gỡ: {groups.Count}");
-            // Gỡ nhóm - tách hình cuối cùng của nhóm cuối cùng
             if (groups.Count > 0)
             {
                 var lastGroup = groups[groups.Count - 1];
-                Console.WriteLine($"Số hình trong nhóm cuối: {lastGroup.Shapes.Count}");
-                if (lastGroup.Shapes.Count > 0)
+                
+                // Nếu nhóm có nhóm con, tách nhóm con cuối cùng
+                if (lastGroup.SubGroups.Count > 0)
                 {
-                    // Lấy hình cuối cùng từ nhóm
+                    var lastSubGroup = lastGroup.SubGroups[lastGroup.SubGroups.Count - 1];
+                    lastGroup.SubGroups.RemoveAt(lastGroup.SubGroups.Count - 1);
+                    groups.Add(lastSubGroup);
+                    MessageBox.Show("Đã tách một nhóm con", "Thông báo");
+                }
+                // Nếu nhóm có hình, tách hình cuối cùng
+                else if (lastGroup.Shapes.Count > 0)
+                {
                     var lastShape = lastGroup.Shapes[lastGroup.Shapes.Count - 1];
                     lastGroup.Shapes.RemoveAt(lastGroup.Shapes.Count - 1);
                     shapes.Add(lastShape);
+                    MessageBox.Show("Đã tách một hình khỏi nhóm", "Thông báo");
+                }
 
-                    // Nếu nhóm không còn hình nào, xóa nhóm
-                    if (lastGroup.Shapes.Count == 0)
+                // Nếu nhóm không còn hình và nhóm con, xóa nhóm
+                if (lastGroup.Shapes.Count == 0 && lastGroup.SubGroups.Count == 0)
+                {
+                    groups.RemoveAt(groups.Count - 1);
+                    if (groups.Count == 0)
                     {
-                        groups.RemoveAt(groups.Count - 1);
-                        if (groups.Count == 0)
-                        {
-                            isGrouping = false;
-                        }
+                        isGrouping = false;
                     }
-                    MessageBox.Show("Đã gỡ một hình khỏi nhóm", "Thông báo");
-                    Console.WriteLine($"Số nhóm sau khi gỡ: {groups.Count}");
                 }
             }
             panel_khungve.Invalidate();
@@ -1322,34 +1405,6 @@ namespace Paint
             }
 
             return false;
-        }
-
-        private void GoCacHinh_Click(object sender, EventArgs e)
-        {
-            // Gỡ nhóm - tách hình cuối cùng của nhóm cuối cùng
-            if (groups.Count > 0)
-            {
-                var lastGroup = groups[groups.Count - 1];
-                if (lastGroup.Shapes.Count > 0)
-                {
-                    // Lấy hình cuối cùng từ nhóm
-                    var lastShape = lastGroup.Shapes[lastGroup.Shapes.Count - 1];
-                    lastGroup.Shapes.RemoveAt(lastGroup.Shapes.Count - 1);
-                    shapes.Add(lastShape);
-
-                    // Nếu nhóm không còn hình nào, xóa nhóm
-                    if (lastGroup.Shapes.Count == 0)
-                    {
-                        groups.RemoveAt(groups.Count - 1);
-                        if (groups.Count == 0)
-                        {
-                            isGrouping = false;
-                        }
-                    }
-                    MessageBox.Show("Đã gỡ một hình khỏi nhóm", "Thông báo");
-                }
-            }
-            panel_khungve.Invalidate();
         }
 
         private void Panel_khungve_MouseWheel(object sender, MouseEventArgs e)
