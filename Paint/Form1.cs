@@ -1225,23 +1225,10 @@ namespace Paint
                 shape.Draw(e.Graphics);
             }
 
-            // Vẽ các nhóm
+            // Vẽ các nhóm và nhóm con của chúng
             foreach (var group in groups)
             {
-                foreach (var shape in group.Shapes)
-                {
-                    shape.Draw(e.Graphics);
-                }
-
-                if (group.IsSelected)
-                {
-                    // Vẽ khung bao quanh nhóm
-                    Rectangle bounds = group.GetGroupBounds();
-                    using (Pen highlightPen = new Pen(Color.Blue, 2) { DashStyle = DashStyle.Dash })
-                    {
-                        e.Graphics.DrawRectangle(highlightPen, bounds);
-                    }
-                }
+                group.Draw(e.Graphics);
             }
 
             if (currentShape != null)
